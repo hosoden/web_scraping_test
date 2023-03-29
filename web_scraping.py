@@ -1,5 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
+from urllib.parse import urljoin
 
 # スクレイピング対象のWebページのURLを指定
 url = 'https://www.yahoo.co.jp'
@@ -11,4 +13,4 @@ res = requests.get(url)
 soup = BeautifulSoup(res.text, 'html.parser')
 
 for item in soup.find_all('a'):
-    print(item.get('href'))
+    print(urljoin(url,item.get('href')))
