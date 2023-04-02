@@ -1,0 +1,64 @@
+import org.apache.commons.io.FileUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class WebScraper {
+
+    public static void main(String[] args) {
+        // 1日に1回、午前10時に実行するようにスケジュール
+        scheduleTask("10:00:00");
+    }
+
+    private static void scheduleTask(String time) {
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    // WebページのURLを指定
+                    String url = "https://example.com/";
+
+                    // Jsoupを使用して、HTMLページを取得
+                    Document doc = Jsoup.connect(url).get();
+
+                    // aタグからリンク情報を取得
+                    Elements links = doc.select("a[href]");
+
+                    // リンク情報を1つずつ処理
+                    for (Element link : links) {
+                        // リンク情報からhref属性を取得
+                        String href = link.attr("href");
+
+                        // href属性が".doc"または".docx"で終わる場合、そのリンク情報をダウンロードして保存
+                        if (href.endsWith(".doc") || href.endsWith(".docx")) {
+                            URL fileUrl = new URL(href);
+                            String fileName = fileUrl.getFile().substring(fileUrl.getFile().lastIndexOf('/') + 1);
+                            FileUtils.copyURLToFile(fileUrl, new File(fileName));
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        // スケジューラーを生成し、実行時間を設定
+        Timer timer = new Timer();
+        LocalDateTime localDateTime = LocalDateTime.now();
+        LocalTime scheduledTime = LocalTime.parse(time);
+        LocalDateTime scheduledDateTime = LocalDateTime.of(localDateTime.toLocalDate(), scheduledTime);
+        Date scheduledDate = Date.from(scheduledDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        timer.scheduleAtFixedRate(task, scheduledDate, 24 * 60 * 60 * 1000); // 24時間ごとに実行
+    }
+}
