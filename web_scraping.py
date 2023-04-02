@@ -12,5 +12,10 @@ res = requests.get(url)
 # BeautifulSoupを使用してHTMLデータを解析
 soup = BeautifulSoup(res.text, 'html.parser')
 
+link_list = []
 for item in soup.find_all('a'):
-    print(urljoin(url,item.get('href')))
+    href = urljoin(url, item.get('href'))
+    if href.endswith(('.doc','.docx','.zip','lzh','.7z','rar','html')):
+        link_list.append(href)
+
+print(link_list)
